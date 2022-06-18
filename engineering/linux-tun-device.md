@@ -1,6 +1,6 @@
-# (WIP) Linux TUN device
+# Linux TUN device
 
-Trong quá trình tìm hiểu Userspace Networking và Wireguard thì mình phát hiện ra TUN/TAP device. Đây là 1 interface của *Unix kernel cho phép implement 1 phần của network stack bằng program chạy trong Userspace
+Trong quá trình tìm hiểu Userspace Networking và Wireguard thì mình phát hiện ra TUN/TAP device. Đây là 1 interface của \*Unix kernel cho phép implement 1 phần của network stack bằng program chạy trong Userspace
 
 Thông thường, user program sẽ gửi/nhận request qua mạng thông qua việc đọc/ghi vào tcp/udp socket (everything is a file). Packet sau đó sẽ vào kernel space, đi qua network stack (thêm tcp/udp/ip header, routing, ...), rồi cuối cùng vào network interface để được gửi qua máy khác
 
@@ -8,7 +8,8 @@ Thông thường, user program sẽ gửi/nhận request qua mạng thông qua v
 
 Tuy nhiên với sự phát triển của internet, nhu cầu chuyển 1 phần của network stack vào user space ra đời. 1 ví dụ của nhu cầu đó là việc tạo kết nối private giữa 2 mạng LAN tại Layer 2/Layer 3 thông qua mạng Internet, hay dễ hiểu thì gọi là VPN :]]]. Kết nối private này thường phát triển theo các nhu cầu riêng về Authentication, Authorization, Encryption, ... nên khó có thể phát triển 1 standard protocol, nên việc đặt trong kernel space là không phù hợp.
 
-Đáp ứng với nhu cầu trên, *Unix kernel cung cấp interface để tạo ra network interface ảo. Khi packet được gửi tới những interface ảo này thì sẽ được kernel gửi lên userspace để được xử lý bởi VPN. VPN sau đó có thể quyết định việc encrypt và routing tới 1 máy khác qua mạng internet. Cụ thể hơn thì kernel cung cấp 3 loại interface ảo là:
+Đáp ứng với nhu cầu trên, \*Unix kernel cung cấp interface để tạo ra network interface ảo. Khi packet được gửi tới những interface ảo này thì sẽ được kernel gửi lên userspace để được xử lý bởi VPN. VPN sau đó có thể quyết định việc encrypt và routing tới 1 máy khác qua mạng internet. Cụ thể hơn thì kernel cung cấp 3 loại interface ảo là:
+
 - TUN device: để gửi/nhận packet ở Layer 3 (IP protocol)
 - TAP device: để gửi/nhận packet ở Layer 2 (Ethernet protocol)
 - Veth pair: để kết nối 2 userspace program (ko đề cập trong bài này)
@@ -86,7 +87,7 @@ func CreateTUN(name string, mtu int) (*os.File, error) {
 }
 ```
 
-*TLDR:* mở file `/dev/net/tun` sau đó gọi lệnh `ioctl` với tham số đặc biệt
+_TLDR:_ mở file `/dev/net/tun` sau đó gọi lệnh `ioctl` với tham số đặc biệt
 
 Sau đó việc đọc/ghi từ TUN interface thông qua việc tương tác với `*os.File` như bình thường. **Note:** đối với darwin, tên của interface **bắt buộc** có format `utun%d`. Nếu tạo interface với tên là `utun`, kernel sẽ tự tạo interface có tên từ `utun0` đến `utun9`
 
