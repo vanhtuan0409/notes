@@ -4,7 +4,9 @@ Trong quá trình tìm hiểu Userspace Networking và Wireguard thì mình phá
 
 Thông thường, user program sẽ gửi/nhận request qua mạng thông qua việc đọc/ghi vào tcp/udp socket (everything is a file). Packet sau đó sẽ vào kernel space, đi qua network stack (thêm tcp/udp/ip header, routing, ...), rồi cuối cùng vào network interface để được gửi qua máy khác
 
-![traditional](https://www.packetcoders.io/content/images/2020/10/image3.png)
+<p align="center">
+    <img alt="traditional" src="https://www.packetcoders.io/content/images/2020/10/image3.png"/>
+</p>
 
 Tuy nhiên với sự phát triển của internet, nhu cầu chuyển 1 phần của network stack vào user space ra đời. 1 ví dụ của nhu cầu đó là việc tạo kết nối private giữa 2 mạng LAN tại Layer 2/Layer 3 thông qua mạng Internet, hay dễ hiểu thì gọi là VPN :]]]. Kết nối private này thường phát triển theo các nhu cầu riêng về Authentication, Authorization, Encryption, ... nên khó có thể phát triển 1 standard protocol, nên việc đặt trong kernel space là không phù hợp.
 
@@ -14,7 +16,9 @@ Tuy nhiên với sự phát triển của internet, nhu cầu chuyển 1 phần 
 - TAP device: để gửi/nhận packet ở Layer 2 (Ethernet protocol)
 - Veth pair: để kết nối 2 userspace program (ko đề cập trong bài này)
 
-![tuntap](https://www.packetcoders.io/content/images/2020/10/image2.png)
+<p align="center">
+    <img alt="tuntap" src="https://www.packetcoders.io/content/images/2020/10/image2.png"/>
+</p>
 
 ### Programing interface
 
