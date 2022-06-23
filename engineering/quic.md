@@ -1,4 +1,4 @@
-# (WIP) QUIC
+# QUIC
 
 ### Lí do dẫn đến QUIC
 
@@ -69,9 +69,24 @@ Tóm gọn lại, dù ổn định và đã được sử dụng lâu đời, TC
 QUIC ban đầu được đưa ra tại Google, sau đó được submit cho IETF và được chuẩn hóa lại. Về cơ bản thì QUIC cố gắng giải quyết các bài toán ở trên bằng cách đề xuất 1 giao thức có các tính chất như sau:
 - Hướng Connection / Stateful
 - Kết hợp handshake (trao đổi cả transport parameters và crytographic parameters)
+- Hỗ trợ encryption
 - Hỗ trợ multiplexing
 - Xây dựng trên UDP
 - Tối ưu cho performance
+
+Trong QUIC, có 2 khái niệm là **Connection và Stream**. Trong đó connection là khái niệm độc lập với UDP. Mỗi connection sẽ có ID riêng, được gửi qua network thông qua UDP protocol. Việc sử dụng UDP cho phép Packet được gửi theo nhiều network path khác nhau, receiver có trách nhiệm dựa vào connection ID để forward cho application tương ứng thay vì sử dụng tuple 4 element như TCP. Khi tạo connection giữa 2 bên, cả transport parameters và crytographic parameters sẽ được trao đổi cùng lúc nhằm giảm số lượng round trip cần thiết
+
+<p align="center">
+    <img alt="http2-header" width="70%" src="https://blog.cloudflare.com/content/images/2018/07/http-request-over-quic@2x.png"/>
+</p>
+
+Sau khi connection đã được thiết lập, application có thể tạo nhiều stream trên cùng 1 connection để gửi nhận data. Lỗi được phân ra thành 2 loại là Connection Error và Stream Error. Retry có thể diễn ra ở từng stream
+
+Để so sánh QUIC và TCP ta sẽ phân tích format packet giữa 2 bên
+
+![packet](https://cloud.netlifyusercontent.com/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/fbf86b42-8f20-4b27-aea5-f1fc164b2683/tcp-vs-quic-packetization.png)
+
+Cảm nhận: QUIC không hẳn là 1 protocol hoàn toàn mới, QUIC chỉ kết hợp giải pháp từ nhiều protocol đã có lại với nhau, giảm bớt overhead của việc phải handle encryption, flow control ở nhiều layer và đưa ra 1 protocol duy nhất có thể hỗ trợ nhiều nhu cầu.
 
 ### Reference
 
