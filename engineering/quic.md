@@ -36,7 +36,7 @@ Tuy nhiên bản thân TLS protocol cũng yêu cầu quy trình 3-way handshake 
 
 #### Head of line blocking
 
-Trước khi nói về bài toán Head-of-line blocking, mình sẽ review lại 1 ít về multiplexing request. Thông thường việc gửi và nhận request trên 1 connection phải diễn ra 1 cách tuần tự. Giao thức này tương tự với việc sử dụng bộ đàm, tại 1 thời điểm chỉ có 1 người được nói. Multiplexing là kĩ thuật cho phép kết hợp nhiều nhiều request/response lại và gửi đi trên cùng 1 connection (gần giống vs batching)
+Trước khi nói về bài toán Head-of-line blocking, mình sẽ review lại 1 ít về multiplexing request. Thông thường việc gửi và nhận request trên 1 connection phải diễn ra 1 cách tuần tự. Giao thức này tương tự với việc sử dụng bộ đàm, tại 1 thời điểm chỉ có 1 người được nói. Multiplexing là kĩ thuật cho phép kết hợp nhiều nhiều request/response lại và gửi đi trên cùng 1 connection. Multiplexing gần giống vs pipelining/batching ở chỗ request có thể gửi liên tục mà không cần chờ response, tuy nhiên khác ở chỗ pipelining ko yêu cầu response phải trả về theo đúng thứ tự của request, trong khi pipelining thì yêu cầu việc đó
 
 <p align="center">
     <img alt="http2" width="70%" src="https://blog.hostvn.net/wp-content/uploads/2017/09/HTTP2-Multiplexing-1024x1015.png"/>
@@ -53,6 +53,18 @@ Khi sử dụng HTTP2, application có thể fetch nhiều object cùng 1 lúc t
 <p align="center">
     <img alt="http2-header" width="70%" src="https://www.cloudflare.com/img/products/website-optimization/http2/multiplexing.svg"/>
 </p
+
+Tuy nhiên việc multiplexing trên TCP connection gặp phải 1 bài toán rất lớn, đó là dù cho request/response đã có thể dược gửi nhận 1 cách độc lập nhưng khi có packet loss xảy ra, **tất cả request stream** đều bị block lại để TCP thực hiện retransmission. Nếu trong điều kiện lí tưởng, chỉ 1 request stream bị ảnh hưởng bới packet loss và các stream còn lại vẫn hoạt động bình thường. Nguyên nhân dẫn đến điều này là vì các Stream không thật sự độc lập với nhau mà vẫn chịu sự ràng buộc của TCP là packet phải được gửi nhận theo thứ tự.
+
+#### Network migration
+
+Một trong những điểm khác nhau giữa TCP và UDP đó là TCP không *stateless*. Một TCP connection có thể có 1 trong các trạng thái như LISTEN, SYN-SENT, ESTABLISHED, CLOSING, .... OS cần phải theo dõi trạng thái 1 connection bằng 1 bảng mapping riêng trong kernel state, hay chính là *conntrack table*. 1 dòng trong conntrack table được xác định (primary key) bởi tuple gồm 4 yếu tố `(src_ip, src_port, dst_ip, dst_port)`
+
+Chính vì việc TCP connection là *stateful* dẫn đến việc nếu client hoặc server thay đổi 1 trong 4 yếu tố trong tuple kể trên thì sẽ không thể sử dụng connection đã tạo được nữa. Việc này thường xảy ra khi có 1 sự thay đổi ở layer thấp hơn (link level) như việc chuyển đổi từ mạng dây sang WiFi hoặc từ WiFi sang 3G/4G. Khi có sự thay đổi về network, application bắt buộc phải tạo lại connection mới, ngoài ra bài toán này khiến TCP không thể hỗ trợ 1 vài kĩ thuật routing ở IP protocol level nhằm tránh nghẽn mạng (network congestion) như ECMP
+
+Tóm gọn lại, dù ổn định và đã được sử dụng lâu đời, TCP vẫn tồn tại nhiều nhược điểm về performance trong nhu cầu hiện đại
+
+### QUIC
 
 ### Reference
 
