@@ -60,12 +60,20 @@ Tuy nhiên việc multiplexing trên TCP connection gặp phải 1 bài toán r�
 
 Một trong những điểm khác nhau giữa TCP và UDP đó là TCP không *stateless*. Một TCP connection có thể có 1 trong các trạng thái như LISTEN, SYN-SENT, ESTABLISHED, CLOSING, .... OS cần phải theo dõi trạng thái 1 connection bằng 1 bảng mapping riêng trong kernel state, hay chính là *conntrack table*. 1 dòng trong conntrack table được xác định (primary key) bởi tuple gồm 4 yếu tố `(src_ip, src_port, dst_ip, dst_port)`
 
-Chính vì việc TCP connection là *stateful* dẫn đến việc nếu client hoặc server thay đổi 1 trong 4 yếu tố trong tuple kể trên thì sẽ không thể sử dụng connection đã tạo được nữa. Việc này thường xảy ra khi có 1 sự thay đổi ở layer thấp hơn (link level) như việc chuyển đổi từ mạng dây sang WiFi hoặc từ WiFi sang 3G/4G. Khi có sự thay đổi về network, application bắt buộc phải tạo lại connection mới, ngoài ra bài toán này khiến TCP không thể hỗ trợ 1 vài kĩ thuật routing ở IP protocol level nhằm tránh nghẽn mạng (network congestion) như ECMP
+Chính vì việc TCP connection là *stateful* dẫn đến việc nếu client hoặc server thay đổi 1 trong 4 yếu tố trong tuple kể trên thì sẽ không thể sử dụng connection đã tạo được nữa. Việc này thường xảy ra khi có 1 sự thay đổi ở layer thấp hơn (link level) như việc chuyển đổi từ mạng dây sang WiFi hoặc từ WiFi sang 3G/4G. Khi có sự thay đổi về network, application bắt buộc phải tạo lại connection mới.
 
-Tóm gọn lại, dù ổn định và đã được sử dụng lâu đời, TCP vẫn tồn tại nhiều nhược điểm về performance trong nhu cầu hiện đại
+Tóm gọn lại, dù ổn định và đã được sử dụng lâu đời, TCP vẫn tồn tại nhiều nhược điểm về performance trong nhu cầu hiện đại. Dễ hiểu thì chúng ta đang tìm kiếm 1 protocol an toàn hơn UDP nhưng đơn giản hơn TCP
 
 ### QUIC
+
+QUIC ban đầu được đưa ra tại Google, sau đó được submit cho IETF và được chuẩn hóa lại. Về cơ bản thì QUIC cố gắng giải quyết các bài toán ở trên bằng cách đề xuất 1 giao thức có các tính chất như sau:
+- Hướng Connection / Stateful
+- Kết hợp handshake (trao đổi cả transport parameters và crytographic parameters)
+- Hỗ trợ multiplexing
+- Xây dựng trên UDP
+- Tối ưu cho performance
 
 ### Reference
 
 - https://blog.cloudflare.com/the-road-to-quic/
+- https://datatracker.ietf.org/doc/rfc9000/
