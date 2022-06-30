@@ -14,6 +14,7 @@ Chúng ta đã quen với 2 protocol được sử dụng phổ biến ở tần
 | Built-in security | Không có                                                                                | Không có                                                |
 
 Trong thực tế, các application thường chọn TCP làm transport protocol bởi vì tính thứ tự và đảm bảo việc gửi packet luôn luôn thành công. Lựa chọn này đồng nghĩa với việc application đã lựa chọn tradeoff đánh đổi performance cho reliablility. Để bù đắp lại cho tradeoff trên, 1 vài kĩ thuật thường được sử dụng để tối ưu hóa cho performance:
+
 - Reuse connection cho nhiều request để giảm thiểu chi phí cho 3-way handshake
 - Tạo nhiều connection cùng lúc để tối ưu hóa bandwidth (bù cho việc TCP không hỗ trợ multiplex)
 - Hiện thực multiplexing ở tầng application (HTTP2, sẽ được đề cập cụ thể hơn ở phần sau)
@@ -52,21 +53,22 @@ Khi sử dụng HTTP2, application có thể fetch nhiều object cùng 1 lúc t
 
 <p align="center">
     <img alt="http2-header" width="70%" src="https://www.cloudflare.com/img/products/website-optimization/http2/multiplexing.svg"/>
-</p
+</p>
 
 Tuy nhiên việc multiplexing trên TCP connection gặp phải 1 bài toán rất lớn, đó là dù cho request/response đã có thể dược gửi nhận 1 cách độc lập nhưng khi có packet loss xảy ra, **tất cả request stream** đều bị block lại để TCP thực hiện retransmission. Nếu trong điều kiện lí tưởng, chỉ 1 request stream bị ảnh hưởng bới packet loss và các stream còn lại vẫn hoạt động bình thường. Nguyên nhân dẫn đến điều này là vì các Stream không thật sự độc lập với nhau mà vẫn chịu sự ràng buộc của TCP là packet phải được gửi nhận theo thứ tự.
 
 #### Network migration
 
-Một trong những điểm khác nhau giữa TCP và UDP đó là TCP không *stateless*. Một TCP connection có thể có 1 trong các trạng thái như LISTEN, SYN-SENT, ESTABLISHED, CLOSING, .... OS cần phải theo dõi trạng thái 1 connection bằng 1 bảng mapping riêng trong kernel state, hay chính là *conntrack table*. 1 dòng trong conntrack table được xác định (primary key) bởi tuple gồm 4 yếu tố `(src_ip, src_port, dst_ip, dst_port)`
+Một trong những điểm khác nhau giữa TCP và UDP đó là TCP không _stateless_. Một TCP connection có thể có 1 trong các trạng thái như LISTEN, SYN-SENT, ESTABLISHED, CLOSING, .... OS cần phải theo dõi trạng thái 1 connection bằng 1 bảng mapping riêng trong kernel state, hay chính là _conntrack table_. 1 dòng trong conntrack table được xác định (primary key) bởi tuple gồm 4 yếu tố `(src_ip, src_port, dst_ip, dst_port)`
 
-Chính vì việc TCP connection là *stateful* dẫn đến việc nếu client hoặc server thay đổi 1 trong 4 yếu tố trong tuple kể trên thì sẽ không thể sử dụng connection đã tạo được nữa. Việc này thường xảy ra khi có 1 sự thay đổi ở layer thấp hơn (link level) như việc chuyển đổi từ mạng dây sang WiFi hoặc từ WiFi sang 3G/4G. Khi có sự thay đổi về network, application bắt buộc phải tạo lại connection mới.
+Chính vì việc TCP connection là _stateful_ dẫn đến việc nếu client hoặc server thay đổi 1 trong 4 yếu tố trong tuple kể trên thì sẽ không thể sử dụng connection đã tạo được nữa. Việc này thường xảy ra khi có 1 sự thay đổi ở layer thấp hơn (link level) như việc chuyển đổi từ mạng dây sang WiFi hoặc từ WiFi sang 3G/4G. Khi có sự thay đổi về network, application bắt buộc phải tạo lại connection mới.
 
 Tóm gọn lại, dù ổn định và đã được sử dụng lâu đời, TCP vẫn tồn tại nhiều nhược điểm về performance trong nhu cầu hiện đại. Dễ hiểu thì chúng ta đang tìm kiếm 1 protocol an toàn hơn UDP nhưng đơn giản hơn TCP
 
 ### QUIC
 
 QUIC ban đầu được đưa ra tại Google, sau đó được submit cho IETF và được chuẩn hóa lại. Về cơ bản thì QUIC cố gắng giải quyết các bài toán ở trên bằng cách đề xuất 1 giao thức có các tính chất như sau:
+
 - Hướng Connection / Stateful
 - Kết hợp handshake (trao đổi cả transport parameters và crytographic parameters)
 - Hỗ trợ encryption
